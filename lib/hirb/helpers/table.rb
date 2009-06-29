@@ -12,7 +12,7 @@
 #   +---+---+
 #
 # By default, the fields/columns are the numerical indices of the array.
-# 
+#
 # An array of hashes ie [{:age=>10, :weight=>100}, {:age=>80, :weight=>500}], would render:
 #   +-----+--------+
 #   | age | weight |
@@ -29,7 +29,7 @@ class Hirb::Helpers::Table
   class TooManyFieldsForWidthError < StandardError; end
 
   class << self
-    
+
     # Main method which returns a formatted table.
     # ==== Options:
     # [:fields] An array which overrides the default fields and can be used to indicate field order.
@@ -53,13 +53,17 @@ class Hirb::Helpers::Table
       new(rows,options).render
     end
   end
-  
+
   #:stopdoc:
   def initialize(rows, options={})
     @options = options
     @options[:filters] ||= {}
+    @vertical = options[:vertical] || (Hirb::View.config[:vertical] if Hirb::View.config)
     @fields = @options[:fields] ? @options[:fields].dup : ((rows[0].is_a?(Hash)) ? rows[0].keys.sort {|a,b| a.to_s <=> b.to_s} :
-      rows[0].is_a?(Array) ? (0..rows[0].length - 1).to_a : [])
+                                                           rows[0].is_a?(Array) ? (0..rows[0].length - 1).to_a : [])
+    if @vertical
+      @longest = @fields.map.sort_by { |i| i.to_s.length }.last.to_s.length
+    end
     @rows = setup_rows(rows)
     @headers = @fields.inject({}) {|h,e| h[e] = e.to_s; h}
     if @options.has_key?(:headers)
@@ -71,7 +75,7 @@ class Hirb::Helpers::Table
       @fields.unshift :hirb_number
     end
   end
-  
+
   def setup_rows(rows)
     rows ||= []
     rows = [rows] unless rows.is_a?(Array)
@@ -81,55 +85,66 @@ class Hirb::Helpers::Table
       }
     end
     rows = filter_values(rows)
-    rows.each_with_index {|e,i| e[:hirb_number] = (i + 1).to_s} if @options[:number]
+    rows.each_with_index {|e,i| e[:hirb_number] = (i + 1).to_s} if @options[:number] or @vertical
     validate_values(rows)
     rows
   end
-  
+
   def render
     body = []
     unless @rows.length == 0
       setup_field_lengths
-      body += @headers ? render_header : [render_border]
+      body += @headers ? render_header : [render_border] unless @vertical
       body += render_rows
-      body << render_border
+      body << render_border unless @vertical
     end
     body << render_table_description
     body.join("\n")
   end
-  
+
   def render_header
     title_row = '| ' + @fields.map {|f|
       format_cell(@headers[f], @field_lengths[f])
     }.join(' | ') + ' |'
     [render_border, title_row, render_border]
   end
-  
+
   def render_border
     '+-' + @fields.map {|f| '-' * @field_lengths[f] }.join('-+-') + '-+'
   end
-  
+
   def format_cell(value, cell_width)
-    text = value.length > cell_width ? 
+    text = value.length > cell_width ?
       (
       (cell_width < 5) ? value.slice(0,cell_width) : value.slice(0, cell_width - 3) + '...'
       ) : value
     sprintf("%-#{cell_width}s", text)
   end
-  
+
   def render_rows
+    i = 0
     @rows.map do |row|
-      row = '| ' + @fields.map {|f|
-        format_cell(row[f], @field_lengths[f])
-      }.join(' | ') + ' |'
+      if @vertical
+        stars = "*" * [(@longest + (@longest / 2)), 3].max
+        row = "#{stars} #{@rows[i][:hirb_number]}. row #{stars}\n" +
+        @fields.map {|f|
+          "#{f.to_s.rjust(@longest)}: #{row[f]}"
+        }.join("\n")
+      else
+        row = '| ' + @fields.map {|f|
+          format_cell(row[f], @field_lengths[f])
+        }.join(' | ') + ' |'
+      end
+      i += 1
+      row
     end
   end
-  
+
   def render_table_description
     (@rows.length == 0) ? "0 rows in set" :
       "#{@rows.length} #{@rows.length == 1 ? 'row' : 'rows'} in set"
   end
-  
+
   def setup_field_lengths
     @field_lengths = default_field_lengths
     if @options[:field_lengths]
@@ -139,7 +154,7 @@ class Hirb::Helpers::Table
       restrict_field_lengths(@field_lengths, table_max_width) if table_max_width
     end
   end
-  
+
   def restrict_field_lengths(field_lengths, max_width)
     max_width -= @fields.size * BORDER_LENGTH + 1
     original_field_lengths = field_lengths.dup
@@ -219,7 +234,7 @@ class Hirb::Helpers::Table
       }
     }
   end
-  
+
   # Converts an array to a hash mapping a numerical index to its array value.
   def array_to_indices_hash(array)
     array.inject({}) {|hash,e|  hash[hash.size] = e; hash }

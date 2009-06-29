@@ -5,7 +5,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
     Hirb::Helpers::Table.render(*args)
   end
   before(:all) { reset_config }
-  
+
   context "basic table" do
     test "renders" do
       expected_table = <<-TABLE.unindent
@@ -19,7 +19,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       TABLE
       table([{:a=>1, :b=>2}, {:a=>3, :b=>4}]).should == expected_table
     end
-    
+
     test "with no headers renders" do
       expected_table = <<-TABLE.unindent
       +---+---+
@@ -42,7 +42,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       TABLE
       table([{'a'=>1, 'b'=>2}, {'a'=>3, 'b'=>4}]).should == expected_table
     end
-    
+
     test "with array only rows renders" do
       expected_table = <<-TABLE.unindent
       +---+---+
@@ -55,11 +55,11 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       TABLE
       table([[1,2], [3,4]]).should == expected_table
     end
-    
+
     test "with too many fields raises error" do
       assert_raises(Hirb::Helpers::Table::TooManyFieldsForWidthError) { table([Array.new(70, 'AAA')]) }
     end
-    
+
     test "with no rows renders" do
       table([]).should == "0 rows in set"
     end
@@ -78,7 +78,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       TABLE
       table([{:a=>1, :b=>2}, {:a=>3, :b=>4}], :fields=>[:b, :a]).should == expected_table
     end
-    
+
     test "fields option and array only rows" do
       expected_table = <<-TABLE.unindent
       +---+---+
@@ -96,7 +96,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       table({:f1=>1, :f2=>2}, options)
       options[:fields].should == [:f1]
     end
-  
+
     test "invalid fields option renders empty columns" do
       expected_table = <<-TABLE.unindent
       +---+---+
@@ -109,7 +109,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
   TABLE
       table([{:a=>1, :b=>2}, {:a=>3, :b=>4}], :fields=>[:b, :c]).should == expected_table
     end
-  
+
     test "invalid fields in field_lengths option renders" do
       expected_table = <<-TABLE.unindent
       +------------+---+
@@ -121,7 +121,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
   TABLE
       table([{:a=> "A" * 50, :b=>2}], :field_lengths=>{:a=>10,:c=>10}).should == expected_table
     end
-  
+
     test "field_lengths option and field_lengths less than 3 characters renders" do
       expected_table = <<-TABLE.unindent
       +----+---+
@@ -133,7 +133,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
   TABLE
       table([{:a=> "A" * 50, :b=>2}], :field_lengths=>{:a=>2}).should == expected_table
     end
-  
+
     test "field_lengths option renders" do
       expected_table = <<-TABLE.unindent
       +------------+---+
@@ -145,7 +145,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
   TABLE
       table([{:a=> "A" * 50, :b=>2}], :field_lengths=>{:a=>10}).should == expected_table
     end
-  
+
     test "max_width option renders" do
       expected_table = <<-TABLE.unindent
       +-----------+---+-----------+
@@ -169,7 +169,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
   TABLE
       table([{:a=> "A" * 50, :b=>2, :c=>"C"*10}], :max_width=>nil).should == expected_table
     end
-    
+
     test "global width renders" do
       expected_table = <<-TABLE.unindent
       +-----------+---+-----------+
@@ -196,7 +196,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
   TABLE
       table([{:a=> "A", :b=>2, :c=>"C"}], :headers=>{:b=>"field B", :c=>"field C"}).should == expected_table
     end
-  
+
     test "headers option and headers shortened by field_lengths renders" do
       expected_table = <<-TABLE.unindent
       +-------+---+
@@ -208,7 +208,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
   TABLE
       table([{:a=> "A", :b=>2}], :headers=>{:a=>"field A"}, :field_lengths=>{:a=>5}).should == expected_table
     end
-    
+
     test "headers option as an array renders" do
       expected_table = <<-TABLE.unindent
       +---+---+
@@ -221,7 +221,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       TABLE
       table([[1,2], [3,4]], :headers=>['A', 'B']).should == expected_table
     end
-    
+
     test "filters option renders" do
       expected_table = <<-TABLE.unindent
       +-----------+---+
@@ -249,7 +249,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       table([['a','b'], ['c', 'd']], :number=>true).should == expected_table
     end
   end
-  
+
   context "object table" do
     before(:all) {
       @pets = [stub(:name=>'rufus', :age=>7, :to_s=>'rufus'), stub(:name=>'alf', :age=>101, :to_s=>'alf')]
@@ -266,7 +266,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       TABLE
       Hirb::Helpers::ObjectTable.render(@pets, :fields=>[:name, :age]).should == expected_table
     end
-    
+
     test "with no options defaults to to_s field" do
       expected_table = <<-TABLE.unindent
       +-------+
@@ -295,7 +295,7 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       Hirb::Helpers::ObjectTable.render([1,2,3,4]).should == expected_table
     end
   end
-  
+
   context "activerecord table" do
     before(:all) {
       @pets = [stub(:name=>'rufus', :age=>7, :class=>mock(:column_names=>[:age, :name])), stub(:name=>'alf', :age=>101)]
@@ -328,6 +328,21 @@ class Hirb::Helpers::TableTest < Test::Unit::TestCase
       3 rows in set
       TABLE
       Hirb::Helpers::AutoTable.render(::Set.new([1,2,3])).should == expected_table
+    end
+  end
+
+  context "vertical table" do
+    test "should display vertically" do
+      require "set"
+      expected_table = <<-TABLE.unindent
+      *** 1. row ***
+      a: A
+      b: B
+      c: C
+      1 row in set
+      TABLE
+
+      table([{:a => "A", :b => "B", :c => "C"}], :vertical => true).should == expected_table
     end
   end
 

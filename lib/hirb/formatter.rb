@@ -28,7 +28,7 @@ module Hirb
     irb>>{:a=>1, :b=>{:c=>3}}
     ---
     :a : 1
-    :b : 
+    :b :
       :c : 3
     => true
 
@@ -81,8 +81,8 @@ module Hirb
       # View class needs to come before enable()
       class Hirb::Helpers::Yaml; def self.render(output, options={}); output.to_yaml; end ;end
       Hirb.enable
-=end 
-  
+=end
+
   class Formatter
     def initialize(additional_config={})
       @klass_config = {}
@@ -97,9 +97,9 @@ module Hirb
     # [:output_method] Specifies a method or proc to call on output before passing it to a helper. If the output is an array, it's applied
     #                  to every element in the array.
     # [:options] Options to pass the helper method or class.
-    # [:ancestor] Boolean which when true causes subclasses of the output class to inherit its config. This doesn't effect the current 
+    # [:ancestor] Boolean which when true causes subclasses of the output class to inherit its config. This doesn't effect the current
     #             output class. Defaults to false. This is used by ActiveRecord classes.
-    # 
+    #
     #   Examples:
     #     {'WWW::Delicious::Element'=>{:class=>'Hirb::Helpers::ObjectTable', :ancestor=>true, :options=>{:max_width=>180}}}
     #     {'Date'=>{:class=>:auto_table, :ancestor=>true}}
@@ -127,7 +127,7 @@ module Hirb
       output_class = determine_output_class(output)
       options = parse_console_options(options) if options.delete(:console)
       options = Util.recursive_hash_merge(klass_config(output_class), options)
-      output = options[:output_method] ? (output.is_a?(Array) ? output.map {|e| call_output_method(options[:output_method], e) } : 
+      output = options[:output_method] ? (output.is_a?(Array) ? output.map {|e| call_output_method(options[:output_method], e) } :
         call_output_method(options[:output_method], output) ) : output
       args = [output]
       args << options[:options] if options[:options] && !options[:options].empty?

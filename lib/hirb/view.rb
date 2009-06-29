@@ -4,7 +4,7 @@ module Hirb
   module View
     DEFAULT_WIDTH = 120
     DEFAULT_HEIGHT = 40
-    class<<self
+    class << self
       attr_accessor :render_method
       attr_reader :config
 
@@ -67,9 +67,9 @@ module Hirb
         config[:width], config[:height] = determine_terminal_size(width, height)
         pager.resize(config[:width], config[:height])
       end
-      
+
       # This is the main method of this class. When view is enabled, this method searches for a formatter it can use for the output and if
-      # successful renders it using render_method(). The options this method takes are helper config hashes as described in 
+      # successful renders it using render_method(). The options this method takes are helper config hashes as described in
       # Hirb::Formatter.format_output(). Returns true if successful and false if no formatting is done or if not enabled.
       def view_output(output, options={})
         enabled? && config[:formatter] && render_output(output, options)
@@ -91,7 +91,7 @@ module Hirb
       def reset_render_method
         @render_method = default_render_method
       end
-      
+
       # Current console width
       def width
         config ? config[:width] : DEFAULT_WIDTH
@@ -159,7 +159,7 @@ module Hirb
       def config
         @config
       end
-      
+
       def default_render_method
         lambda {|output| page_output(output) || puts(output) }
       end
@@ -170,7 +170,7 @@ module Hirb
       #:startdoc:
     end
   end
-  
+
   # Namespace for autoloaded views
   module Views
   end
